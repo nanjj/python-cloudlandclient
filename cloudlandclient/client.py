@@ -1,9 +1,7 @@
-import atexit
 import logging
 import requests
 import utils
 import tempfile
-import os
 import os.path as path
 import pickle
 
@@ -29,30 +27,27 @@ class CloudlandClient:
         logger.info(result.text)
         return result
 
-    def remove_cookies(self):
-        cp = self.get_cookies_path()
-        try:
-            os.remove(cp)
-        except OSError:
-            pass
-
-    def get_cookies_path(self):
+    @property
+    def cpath(self):
         return path.join(tempfile.gettempdir(), 'cloudland.cookies')
 
     def load_cookies(self):
-        cp = self.get_cookies_path()
-        if not path.isfile(cp):
+        cpath = self.cpath
+        if not path.isfile(cpath):
             return None
-        with open(cp, 'r') as cf:
-            return pickle.load(cf)
+        with open(cpath, 'r') as cfile:
+            cookies = pickle.load(cfile)
+        if cookies:
+            for cookie in cookies:
+                if cookie.is_expired():
+                    logger.info('Cookie %s is expired.' % cookie)
+                    return None
+        return cookies
 
-    def dump_cookies(self, cookies):
-        cp = self.get_cookies_path()
-        if path.isfile(cp):
-            return None
-        with open(cp, 'w+') as cf:
-            pickle.dump(cookies, cf)
-            atexit.register(self.remove_cookies)
+    def dump_cookies(self):
+        logger.info(self.cpath)
+        with open(self.cpath, 'w+') as cfile:
+            pickle.dump(self.cookies, cfile)
 
     def login(self, username, password):
         cookies = self.load_cookies()
@@ -64,7 +59,7 @@ class CloudlandClient:
         r = self.post(data)
         if 'You need to login before proceed!' not in r.text:
             self.cookies = r.cookies
-            self.dump_cookies(self.cookies)
+            self.dump_cookies()
 
     def vm_create(self, image, vlan,
                   name=None, cpu=None, memory=None, increase=None):
