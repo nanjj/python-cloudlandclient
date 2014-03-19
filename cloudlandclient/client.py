@@ -1,6 +1,11 @@
+import atexit
 import logging
 import requests
 import utils
+import tempfile
+import os
+import os.path as path
+import pickle
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +29,42 @@ class CloudlandClient:
         logger.info(result.text)
         return result
 
+    def remove_cookies(self):
+        cp = self.get_cookies_path()
+        try:
+            os.remove(cp)
+        except OSError:
+            pass
+
+    def get_cookies_path(self):
+        return path.join(tempfile.gettempdir(), 'cloudland.cookies')
+
+    def load_cookies(self):
+        cp = self.get_cookies_path()
+        if not path.isfile(cp):
+            return None
+        with open(cp, 'r') as cf:
+            return pickle.load(cf)
+
+    def dump_cookies(self, cookies):
+        cp = self.get_cookies_path()
+        if path.isfile(cp):
+            return None
+        with open(cp, 'w+') as cf:
+            pickle.dump(cookies, cf)
+            atexit.register(self.remove_cookies)
+
     def login(self, username, password):
+        cookies = self.load_cookies()
+        if cookies:
+            self.cookies = cookies
+            return
         password = utils.sha1sum(password)
         data = {'username': username, 'sha1': password, 'op': 'login'}
         r = self.post(data)
         if 'You need to login before proceed!' not in r.text:
             self.cookies = r.cookies
+            self.dump_cookies(self.cookies)
 
     def vm_create(self, image, vlan,
                   name=None, cpu=None, memory=None, increase=None):
