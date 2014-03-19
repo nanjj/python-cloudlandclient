@@ -28,7 +28,8 @@ class CloudlandClient:
         password = utils.sha1sum(password)
         data = {'username': username, 'sha1': password, 'op': 'login'}
         r = self.post(data)
-        self.cookies = r.cookies
+        if 'You need to login before proceed!' not in r.text:
+            self.cookies = r.cookies
 
     def vm_create(self, image, vlan,
                   name=None, cpu=None, memory=None, increase=None):

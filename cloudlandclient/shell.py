@@ -292,10 +292,14 @@ class CloudlandShell:
         if args.endpoint and args.username and args.password:
             self.client = CloudlandClient(
                 args.endpoint, args.username, args.password)
-        else:
-            self.do_help(args)
-            return 1
-        args.func(args)
+            if self.client.cookies:
+                args.func(args)
+                return 0
+        print("Please check whether "
+              "\n\t--username CLOUDLAND_USERNAME "
+              "\n\t--password CLOUDLAND_PASSWORD "
+              "\n\t--endpoint CLOUDLAND_ENDPOINT \n"
+              "are set correctly.")
 
 
 class HelpFormatter(argparse.HelpFormatter):
@@ -312,4 +316,4 @@ def main(args=None):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
