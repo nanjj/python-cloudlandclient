@@ -2,6 +2,7 @@ import logging
 import requests
 import utils
 import tempfile
+import time
 import os.path as path
 import pickle
 
@@ -45,9 +46,12 @@ class CloudlandClient:
         return cookies
 
     def dump_cookies(self):
+        cookies = self.cookies
+        for cookie in cookies:
+            cookie.expires = time.now() + 6000 - 10
         logger.info(self.cpath)
         with open(self.cpath, 'w+') as cfile:
-            pickle.dump(self.cookies, cfile)
+            pickle.dump(cookies, cfile)
 
     def login(self, username, password):
         cookies = self.load_cookies()
