@@ -48,7 +48,7 @@ class CloudlandClient:
     def dump_cookies(self):
         cookies = self.cookies
         for cookie in cookies:
-            cookie.expires = time.now() + 6000 - 10
+            cookie.expires = time.time() + 6000 - 10
         logger.info(self.cpath)
         with open(self.cpath, 'w+') as cfile:
             pickle.dump(cookies, cfile)
