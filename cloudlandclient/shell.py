@@ -248,6 +248,41 @@ class CloudlandShell:
             vm=args.vm)
         utils.pretty(head='VM|VLAN|STATUS', body=body)
 
+    def do_snapshot_list(self, args):
+        '''List snapshots.'''
+        body = self.client.snapshot_list()
+        utils.pretty(head='SNAPSHOT|STATUS|DESC|OWNER', body=body)
+
+    @utils.arg('snapshot',  metavar='<SNAPSHOT>',
+               help='Existing SNAPSHOT id.')
+    def do_snapshot_delete(self, args):
+        '''Delete a SNAPSHOT'''
+        body = self.client.snapshot_delete(snapshot=args.snapshot)
+        utils.pretty(head='SNAPSHOT|STATUS', body=body)
+
+    @utils.arg('snapshot',  metavar='<SNAPSHOT>',
+               help='Existing SNAPSHOT id.')
+    def do_snapshot_download(self, args):
+        '''Download a SNAPSHOT'''
+        snapshot = args.snapshot
+        body = self.client.snapshot_download(snapshot=snapshot)
+        result = utils.loads(body)
+        result.pop()
+        if len(result) == 0:
+            print('Snapshot %s does not exist.' % snapshot)
+            return -1
+        uri=result.pop()
+        utils.download(uri)
+    
+    @utils.arg('vm', metavar='<VM>',
+               help='The virtual machine to create SNAPSHOT')
+    @utils.arg('--desc', help='Snapshot description.')
+    def do_snapshot_create(self, args):
+        '''Create a SNAPSHOT'''
+        body = self.client.snapshot_create(vm=args.vm,
+                                           desc=args.desc)
+        utils.pretty(head='SNAPSHOT|STATUS', body=body)
+
     def _find_actions(self, subparsers, actions_module):
         for attr in (a for a in dir(actions_module) if a.startswith('do_')):
             command = attr[3:].replace('_', '-')
@@ -293,8 +328,7 @@ class CloudlandShell:
             self.client = CloudlandClient(
                 args.endpoint, args.username, args.password)
             if self.client.cookies:
-                args.func(args)
-                return 0
+                return args.func(args)
         print("Please check whether "
               "\n\t--username CLOUDLAND_USERNAME "
               "\n\t--password CLOUDLAND_PASSWORD "
@@ -312,7 +346,7 @@ class HelpFormatter(argparse.HelpFormatter):
 def main(args=None):
     if args is None:
         args = sys.argv[1:]
-    CloudlandShell().main(args)
+    return CloudlandShell().main(args)
 
 
 if __name__ == "__main__":

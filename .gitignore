@@ -3,6 +3,7 @@
 .tox
 .testrepository
 *.pyc
+.DS*
 build
 dist
 AUTHORS
