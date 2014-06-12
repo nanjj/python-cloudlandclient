@@ -177,3 +177,27 @@ class CloudlandClient:
                 'vol_name': volume}
         r = self.post(data=data)
         return r.text.strip()
+
+    def snapshot_list(self):
+        params = {'action': 'get_snapshot_list'}
+        r = self.get(params=params)
+        return r.text.strip()
+
+    def snapshot_delete(self, snapshot):
+        data = {'exec': 'delete_snapshot',
+                'snapshot': snapshot}
+        r = self.post(data=data)
+        return r.text.strip()
+
+    def snapshot_create(self, vm, desc):
+        data = {'exec': 'create_snapshot',
+                'vm_ID': vm,
+                'snap_desc': desc}
+        r = self.post(data=data)
+        return r.text.strip()
+
+    def snapshot_download(self, snapshot):
+        data = {'exec': 'download_snapshot',
+                'snapshot': snapshot}
+        r = self.post(data=data)
+        return r.text.strip()

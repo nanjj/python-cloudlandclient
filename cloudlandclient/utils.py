@@ -12,17 +12,43 @@
 
 from prettytable import PrettyTable
 import hashlib
+import json
+import requests
+import sys
 
+def download(url):
+    filename = url.split('/')[-1]
+    res = requests.get(url, stream=True)
+    length = int(res.headers.get('content-length'))
+    position = 0
+    m=1024*1024
+    with open(filename, 'wb') as f:
+        for chunk in res.iter_content(chunk_size=2048):
+            if chunk:
+                f.write(chunk)
+                f.flush()
+                position = position + len(chunk)
+                sys.stdout.write(
+                    '\rDownloading %(filename)s, size %(length)sM, received %(position)sM...' %
+                    {'filename': filename,
+                     'position': (position/m),
+                     'length': length/m})
+
+
+def loads(body):
+    if body:
+        return list(json.loads(body))
+    return []
 
 def pretty(head, body):
     if head and body:
-        if body[0] != '[' or '!' in body:
-            head = 'RESULT'
         x = PrettyTable(head.split('|'))
-        body = body.replace('[', '').replace(
-            ']', '').replace('"', '')
         if body:
-            lines = body.split(',')
+            lines = loads(body)
+            code = lines.pop()
+            if code != 0:
+                print('\n'.join(lines))
+                return
             for line in lines:
                 if line:
                     try:
