@@ -21,18 +21,24 @@ def download(url):
     res = requests.get(url, stream=True)
     length = int(res.headers.get('content-length'))
     position = 0
-    m=1024*1024
+    m = 1024*1024
+    previous = 0
+    current = 0
     with open(filename, 'wb') as f:
-        for chunk in res.iter_content(chunk_size=2048):
+        for chunk in res.iter_content(chunk_size=4096):
             if chunk:
                 f.write(chunk)
                 f.flush()
                 position = position + len(chunk)
-                sys.stdout.write(
-                    '\rDownloading %(filename)s, size %(length)sM, received %(position)sM...' %
-                    {'filename': filename,
-                     'position': (position/m),
-                     'length': length/m})
+                current = position/m
+                if current > previous:
+                    sys.stdout.write(
+                        '\rDownloading %(filename)s, total %(length)sM, received %(position)sM' %
+                        {'filename': filename,
+                         'position': position/m,
+                         'length': length/m})
+                    sys.stdout.flush()
+                    previous = current
 
 
 def loads(body):
