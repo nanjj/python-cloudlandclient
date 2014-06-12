@@ -2,6 +2,7 @@
 *.egg-info
 .tox
 .testrepository
+.DS_Store
 *.pyc
 build
 dist

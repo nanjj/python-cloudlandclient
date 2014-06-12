@@ -271,7 +271,7 @@ class CloudlandShell:
         if len(result) == 0:
             print('Snapshot %s does not exist.' % snapshot)
             return -1
-        url=result.pop()
+        uri=result.pop()
         utils.download(uri)
     
     @utils.arg('vm', metavar='<VM>',
