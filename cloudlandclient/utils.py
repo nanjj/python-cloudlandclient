@@ -15,6 +15,8 @@ import hashlib
 import json
 import requests
 import sys
+import os
+
 
 def download(url):
     filename = url.split('/')[-1]
@@ -33,7 +35,7 @@ def download(url):
                 current = position/m
                 if current > previous:
                     sys.stdout.write(
-                        '\rDownloading %(filename)s, size %(length)sM, received %(position)sM' %
+                        '\rDownloading %(filename)s, total %(length)sM, received %(position)sM' %
                         {'filename': filename,
                          'position': position/m,
                          'length': length/m})
@@ -45,6 +47,11 @@ def loads(body):
     if body:
         return list(json.loads(body))
     return []
+
+
+def dumps(data):
+    return json.dumps(data)
+
 
 def pretty(head, body):
     if head and body:
@@ -90,3 +97,10 @@ def is_not_sha1sum(data):
             if c not in '0123456789abcdedf':
                 return True
     return False
+
+
+def read_file(filename):
+    if os.path.isfile(filename):
+        with open(filename) as f:
+            return f.read()
+    return filename

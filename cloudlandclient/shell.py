@@ -85,15 +85,21 @@ class CloudlandShell:
     @utils.arg('--increase',
                metavar='<DISK SIZE>', type=int,
                help=' Disk size to increase in Giga bytes.')
+    @utils.arg('--user-data', metavar='<USER DATA>', required=False,
+               help='User data of the virtual machine to create.')
     def do_vm_create(self, args):
         """Create virtual machine."""
+        metadata = {}
+        if args.user_data:
+            metadata["user_data"] = utils.read_file(args.user_data)
         body = self.client.vm_create(
             image=args.image,
             vlan=args.vlan,
             name=args.name,
             cpu=args.cpu,
             memory=args.memory,
-            increase=args.increase)
+            increase=args.increase,
+            metadata=metadata)
         utils.pretty(head="VM|STATUS", body=body)
 
     def do_vm_list(self, args):

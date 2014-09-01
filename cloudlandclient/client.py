@@ -53,10 +53,19 @@ class CloudlandClient:
         with open(self.cpath, 'w+') as cfile:
             pickle.dump(cookies, cfile)
 
+    def test_cookies(self, cookies):
+        org = self.cookies
+        result = False
+        self.cookies = cookies
+        if cookies:
+            if 'You need to login before proceed!' not in self.vm_list():
+                result = True
+        self.cookies = org
+        return result
+
     def login(self, username, password):
         cookies = self.load_cookies()
-        if cookies:
-            self.cookies = cookies
+        if self.test_cookies(cookies):
             return
         password = utils.sha1sum(password)
         data = {'username': username, 'sha1': password, 'op': 'login'}
@@ -66,14 +75,15 @@ class CloudlandClient:
             self.dump_cookies()
 
     def vm_create(self, image, vlan,
-                  name=None, cpu=None, memory=None, increase=None):
+                  name=None, cpu=None, memory=None, increase=None, metadata={}):
         data = {'exec': 'launch_vm',
                 'image': image,
                 'vlan': vlan,
                 'name': name,
                 'cpu': cpu,
                 'memory': memory,
-                'disk_inc': increase}
+                'disk_inc': increase,
+                'metadata': utils.dumps(metadata)}
         r = self.post(data=data)
         return r.text.strip()
 
