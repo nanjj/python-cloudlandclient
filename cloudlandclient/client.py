@@ -54,13 +54,11 @@ class CloudlandClient:
             pickle.dump(cookies, cfile)
 
     def test_cookies(self, cookies):
-        org = self.cookies
         result = False
         self.cookies = cookies
         if cookies:
             if 'You need to login before proceed!' not in self.vm_list():
                 result = True
-        self.cookies = org
         return result
 
     def login(self, username, password):
