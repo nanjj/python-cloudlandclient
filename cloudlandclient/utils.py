@@ -17,6 +17,8 @@ import requests
 import sys
 import os
 
+from cloudlandclient.exc import SomeThingWrong
+
 
 def download(url):
     filename = url.split('/')[-1]
@@ -45,12 +47,22 @@ def download(url):
 
 def loads(body):
     if body:
-        return list(json.loads(body))
-    return []
+        lines = list(json.loads(body))
+    if not lines or lines.pop() != 0:
+        raise SomeThingWrong(message=body)
+    return lines
 
 
 def dumps(data):
     return json.dumps(data)
+
+
+def cut(lines, delim='|', field=1):
+    result = []
+    for line in lines:
+        if line:
+            result.append(line.split('|')[field-1])
+    return result
 
 
 def pretty(head, body):
@@ -58,10 +70,6 @@ def pretty(head, body):
         x = PrettyTable(head.split('|'))
         if body:
             lines = loads(body)
-            code = lines.pop()
-            if code != 0:
-                print('\n'.join(lines))
-                return
             for line in lines:
                 if line:
                     try:

@@ -6,6 +6,10 @@ import time
 import os.path as path
 import pickle
 
+from cloudlandclient.exc import ImageNotExist
+from cloudlandclient.exc import VlanNotExist
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -74,6 +78,12 @@ class CloudlandClient:
 
     def vm_create(self, image, vlan,
                   name=None, cpu=None, memory=None, increase=None, metadata={}):
+        if image not in self.images():
+            raise ImageNotExist(image)
+
+        if vlan not in self.vlans():
+            raise VlanNotExist(vlan)
+
         data = {'exec': 'launch_vm',
                 'image': image,
                 'vlan': vlan,
@@ -101,6 +111,9 @@ class CloudlandClient:
         r = self.get(params=params)
         return r.text.strip()
 
+    def images(self):
+        return utils.cut(utils.loads(self.image_list()))
+
     def image_show(self, image):
         params = {'action': 'get_img',
                   'name': image}
@@ -126,6 +139,9 @@ class CloudlandClient:
         params = {'action': 'get_link_list'}
         r = self.get(params=params)
         return r.text.strip()
+
+    def vlans(self):
+        return [int(x) for x in utils.cut(utils.loads(self.vlan_list()))]
 
     def vlan_create(self, vlan, network, netmask, gateway, start_ip, end_ip,
                     shared, use_dhcp):
@@ -166,6 +182,8 @@ class CloudlandClient:
         return r.text.strip()
 
     def volume_create(self, size, image, desc):
+        if image and image not in self.images():
+            raise ImageNotExist(image)
         data = {'exec': 'create_vol',
                 'vol_size': size,
                 'img_name': image,
