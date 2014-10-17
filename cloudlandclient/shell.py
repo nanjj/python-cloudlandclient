@@ -334,7 +334,13 @@ class CloudlandShell:
             self.client = CloudlandClient(
                 args.endpoint, args.username, args.password)
             if self.client.cookies:
-                return args.func(args)
+                try:
+                    return args.func(args)
+                except Exception as e:
+                    print(str(e))
+                    if options.debug:
+                        raise e
+                    return 1
         print("Please check whether "
               "\n\t--username CLOUDLAND_USERNAME "
               "\n\t--password CLOUDLAND_PASSWORD "

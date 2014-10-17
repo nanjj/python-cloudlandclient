@@ -1,4 +1,0 @@
-python-cloudlandclient
-======================
-
-CloudLand Client
