@@ -1,13 +1,14 @@
 import logging
+import os.path as path
 import requests
-import utils
 import tempfile
 import time
-import os.path as path
+
 import pickle
 
 from cloudlandclient.exc import ImageNotExist
 from cloudlandclient.exc import VlanNotExist
+from cloudlandclient import utils
 
 
 logger = logging.getLogger(__name__)
@@ -76,8 +77,9 @@ class CloudlandClient:
             self.cookies = r.cookies
             self.dump_cookies()
 
-    def vm_create(self, image, vlan,
-                  name=None, cpu=None, memory=None, increase=None, metadata={}):
+    def vm_create(
+            self, image, vlan, name=None, cpu=None, memory=None,
+            increase=None, metadata={}):
         if image not in self.images():
             raise ImageNotExist(image)
 
@@ -106,9 +108,10 @@ class CloudlandClient:
         r = self.post(data=data)
         return r.text.strip()
 
-    def vm_destroy(self, vm):
+    def vm_stop(self, vm, force=False):
         data = {'exec': 'destroy_vm',
-                'vm_ID': vm}
+                'vm_ID': vm,
+                'force': force}
         r = self.post(data=data)
         return r.text.strip()
 

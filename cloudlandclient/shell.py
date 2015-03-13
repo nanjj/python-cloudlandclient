@@ -3,13 +3,14 @@ Command line interface to cloudland.
 '''
 
 import argparse
+import cloudlandclient
+from cloudlandclient.client import CloudlandClient
+from cloudlandclient import utils
 import json
 import logging
 import os
 import sys
-import cloudlandclient
-from client import CloudlandClient
-import utils
+
 
 logger = logging.getLogger(__name__)
 
@@ -116,10 +117,15 @@ class CloudlandShell:
         utils.pretty(head='VM|STATUS', body=body)
 
     @utils.arg('vm', metavar='<VM>',
-               help='The virtual machine to destroy')
-    def do_vm_destroy(self, args):
+               help='The virtual machine to stop')
+    @utils.arg('--force', type=bool, default=False,
+               help='force stop, may lost data(true or false).')
+    def do_vm_stop(self, args):
         '''Destroy virtual machine.'''
-        body = self.client.vm_destroy(vm=args.vm)
+        force = False
+        if args.force:
+            force = args.force
+        body = self.client.vm_stop(vm=args.vm, force=force)
         utils.pretty(head='VM|STATUS', body=body)
 
     @utils.arg('vm', metavar='<VM>',
@@ -145,7 +151,7 @@ class CloudlandShell:
                help='The url to the image binary.')
     @utils.arg('platform', metavar='<OS PLATFORM>',
                help='The OS platform of the image(linux or windows).')
-    @utils.arg('--shared', type=bool,
+    @utils.arg('--shared', type=bool, default=True,
                help='Share the image or not(true or false).')
     @utils.arg('--desc', help='Image description.')
     def do_image_create(self, args):
@@ -163,7 +169,7 @@ class CloudlandShell:
         '''Show image.'''
         body = self.client.image_show(image=args.image)
         body = dict(json.loads(body))
-        # TODO remove below workaround once image show is ready.
+        # TODO(0) remove below workaround once image show is ready.
         head = '|'.join(body.keys()).upper()
         body = '|'.join([v.strip() for v in body.values()]).replace(',', '')
         body = '["%s"]' % body
@@ -273,17 +279,17 @@ class CloudlandShell:
         body = self.client.snapshot_list()
         utils.pretty(head='SNAPSHOT|STATUS|DESC|OWNER', body=body)
 
-    @utils.arg('snapshot',  metavar='<SNAPSHOT>',
+    @utils.arg('snapshot', metavar='<SNAPSHOT>',
                help='Existing SNAPSHOT id.')
     def do_snapshot_delete(self, args):
-        '''Delete a SNAPSHOT'''
+        '''Delete a SNAPSHOT.'''
         body = self.client.snapshot_delete(snapshot=args.snapshot)
         utils.pretty(head='SNAPSHOT|STATUS', body=body)
 
-    @utils.arg('snapshot',  metavar='<SNAPSHOT>',
+    @utils.arg('snapshot', metavar='<SNAPSHOT>',
                help='Existing SNAPSHOT id.')
     def do_snapshot_download(self, args):
-        '''Download a SNAPSHOT'''
+        '''Download a SNAPSHOT.'''
         snapshot = args.snapshot
         body = self.client.snapshot_download(snapshot=snapshot)
         result = utils.loads(body)
@@ -291,14 +297,14 @@ class CloudlandShell:
         if len(result) == 0:
             print('Snapshot %s does not exist.' % snapshot)
             return -1
-        uri=result.pop()
+        uri = result.pop()
         utils.download(uri)
-    
+
     @utils.arg('vm', metavar='<VM>',
                help='The virtual machine to create SNAPSHOT')
     @utils.arg('--desc', help='Snapshot description.')
     def do_snapshot_create(self, args):
-        '''Create a SNAPSHOT'''
+        '''Create a SNAPSHOT.'''
         body = self.client.snapshot_create(vm=args.vm,
                                            desc=args.desc)
         utils.pretty(head='SNAPSHOT|STATUS', body=body)

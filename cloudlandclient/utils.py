@@ -10,12 +10,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from prettytable import PrettyTable
 import hashlib
 import json
+import os
+from prettytable import PrettyTable
 import requests
 import sys
-import os
+
 
 from cloudlandclient.exc import SomeThingWrong
 
@@ -25,7 +26,7 @@ def download(url):
     res = requests.get(url, stream=True)
     length = int(res.headers.get('content-length'))
     position = 0
-    m = 1024*1024
+    m = 1024 * 1024
     previous = 0
     current = 0
     with open(filename, 'wb') as f:
@@ -34,13 +35,14 @@ def download(url):
                 f.write(chunk)
                 f.flush()
                 position = position + len(chunk)
-                current = position/m
+                current = position / m
                 if current > previous:
                     sys.stdout.write(
-                        '\rDownloading %(filename)s, total %(length)sM, received %(position)sM' %
+                        '\rDownloading %(filename)s, total %(length)sM,'
+                        ' received %(position)sM' %
                         {'filename': filename,
-                         'position': position/m,
-                         'length': length/m})
+                         'position': position / m,
+                         'length': length / m})
                     sys.stdout.flush()
                     previous = current
 
@@ -61,7 +63,7 @@ def cut(lines, delim='|', field=1):
     result = []
     for line in lines:
         if line:
-            result.append(line.split('|')[field-1])
+            result.append(line.split('|')[field - 1])
     return result
 
 
@@ -75,9 +77,9 @@ def pretty(head, body):
                     try:
                         x.add_row(line.split('|'))
                     except Exception:
-                        print body
+                        print(body)
                         raise
-        print x
+        print(x)
 
 
 # Decorator for cli-args
