@@ -100,6 +100,18 @@ class CloudlandClient:
         r = self.get(params=params)
         return r.text.strip()
 
+    def vm_start(self, vm):
+        data = {'exec': 'create_vm',
+                'vm_ID': vm}
+        r = self.post(data=data)
+        return r.text.strip()
+
+    def vm_destroy(self, vm):
+        data = {'exec': 'destroy_vm',
+                'vm_ID': vm}
+        r = self.post(data=data)
+        return r.text.strip()
+
     def vm_delete(self, vm):
         data = {'exec': 'clear_vm',
                 'vm_ID': vm}

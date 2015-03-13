@@ -109,6 +109,20 @@ class CloudlandShell:
         utils.pretty(head=head, body=body)
 
     @utils.arg('vm', metavar='<VM>',
+               help='The virtual machine to start')
+    def do_vm_start(self, args):
+        '''Start virtual machine.'''
+        body = self.client.vm_start(vm=args.vm)
+        utils.pretty(head='VM|STATUS', body=body)
+
+    @utils.arg('vm', metavar='<VM>',
+               help='The virtual machine to destroy')
+    def do_vm_destroy(self, args):
+        '''Destroy virtual machine.'''
+        body = self.client.vm_destroy(vm=args.vm)
+        utils.pretty(head='VM|STATUS', body=body)
+
+    @utils.arg('vm', metavar='<VM>',
                help='The virtual machine to be deleted')
     def do_vm_delete(self, args):
         '''Delete virtual machine.'''
