@@ -22,7 +22,8 @@ class CloudlandClient:
 
     def post(self, data):
         logger.info(data)
-        result = requests.post(self.endpoint, data=data, cookies=self.cookies)
+        result = requests.post(
+            self.endpoint, data=data, cookies=self.cookies, timeout=60)
         logger.info(result.text)
         return result
 
