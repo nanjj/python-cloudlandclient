@@ -71,8 +71,11 @@ class CloudlandClient:
         cookies = self.load_cookies()
         if self.test_cookies(cookies):
             return
-        password = utils.sha1sum(password)
-        data = {'username': username, 'sha1': password, 'op': 'login'}
+        if username.find('@') == -1 or not username.endswith(".ibm.com"):
+            password = utils.sha1sum(password)
+            data = {'username': username, 'sha1': password, 'op': 'login'}
+        else:
+            data = {'username': username, 'password1': password, 'op': 'login'}
         r = self.post(data)
         if 'You need to login before proceed!' not in r.text:
             self.cookies = r.cookies
